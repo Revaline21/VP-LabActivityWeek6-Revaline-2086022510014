@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../model/book.dart';
+import '../../Model/Book.dart';
 
 class BookCard extends StatelessWidget {
   final Book book;
-  final BookStatus status;
+  final String status;
   final VoidCallback onBorrow;
 
   const BookCard({
@@ -13,13 +13,16 @@ class BookCard extends StatelessWidget {
     required this.onBorrow,
   });
 
+  bool get _isAvailable => status == 'Tersedia';
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 2,
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         title: Text(
           book.title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -28,13 +31,13 @@ class BookCard extends StatelessWidget {
           padding: const EdgeInsets.only(top: 4.0),
           child: Text(book.author),
         ),
-        trailing: book.isAvailable
+        trailing: _isAvailable
             ? FilledButton(
                 onPressed: onBorrow,
                 child: const Text('Pinjam'),
               )
             : Text(
-                status.name.toUpperCase(),
+                status.toUpperCase(),
                 style: const TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,

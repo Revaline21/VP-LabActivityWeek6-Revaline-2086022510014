@@ -1,23 +1,37 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+import '../Book.dart';
+import '../Loan.dart';
 
 class LibraryService {
-  final String _assetPath;
+  static const String _booksAsset = 'assets/data/books.json';
 
-  LibraryService({String assetPath = 'assets/library_data.json'})
-      : _assetPath = assetPath;
-  Future<Map<String, dynamic>> fetchLibraryData() async {
-    try {
-      final String jsonString = await rootBundle.loadString(_assetPath);
-      final Map<String, dynamic> data = json.decode(jsonString);
-      return data;
-    } catch (e) {
-      debugPrint('Error saat membaca file JSON: $e');
-      return {
-        'books': [],
-        'loans': [],
-      };
-    }
+  static final List<Book> _books = [];
+  static final List<Loan> _loans = [];
+  static bool _loaded = false;
+
+  Future<void> init() async {
+    if (_loaded) return;
+    final raw = await rootBundle.loadString(_booksAsset);
+    final list = jsonDecode(raw) as List<dynamic>;
+    _books
+      ..clear()
+      ..addAll(list.map((e) => Book.fromJson(e as Map<String, dynamic>)));
+    _loaded = true;
+  }
+
+  List<Book> readBooks() => List.of(_books);
+
+  void writeBooks(List<Book> books) {
+    final copy = List.of(books);
+    _books..clear()..addAll(copy);
+  }
+
+  List<Loan> readLoans() => List.of(_loans);
+
+  void writeLoans(List<Loan> loans) {
+    final copy = List.of(loans);
+    _loans..clear()..addAll(copy);
   }
 }

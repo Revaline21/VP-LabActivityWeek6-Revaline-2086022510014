@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../Model/Repository/LibraryRepository.dart';
-import '../model/book.dart';
-import '../model/loan.dart';
+import '../Model/Book.dart';
+import '../Model/Loan.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final LibraryRepository _repository;

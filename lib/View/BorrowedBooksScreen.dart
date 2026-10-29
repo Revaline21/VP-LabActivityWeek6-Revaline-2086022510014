@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../viewmodel/library_view_model.dart';
-import 'Widget/loancard.dart';
+import '../ViewModel/library_view_model.dart';
+import 'Widget/LoanCard.dart';
 
 class BorrowedBooksScreen extends StatelessWidget {
   final LibraryViewModel viewModel;
