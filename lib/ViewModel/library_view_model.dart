@@ -37,7 +37,7 @@ class LibraryViewModel extends ChangeNotifier {
         id: '',
         title: 'Tidak Ditemukan',
         author: '-',
-        replacementPrice: 0.0,
+        replacementPrice: 0,
         totalQuantity: 0,
         availableQuantity: 0,
       ),
