@@ -1,69 +1,57 @@
 import 'package:flutter/material.dart';
 import '../Model/Repository/LibraryRepository.dart';
 import '../Model/Book.dart';
-import '../Model/Loan.dart';
+
+typedef CatalogItem = ({
+  String id,
+  String title,
+  String author,
+  String stockLabel,
+  bool canBorrow,
+});
 
 class LibraryViewModel extends ChangeNotifier {
   final LibraryRepository _repository;
   bool _isLoading = false;
 
-  LibraryViewModel({required LibraryRepository repository}) : _repository = repository;
+  LibraryViewModel({LibraryRepository? repository})
+      : _repository = repository ?? LibraryRepository();
 
   bool get isLoading => _isLoading;
-  List<Book> get books => _repository.getAllBooks();
-  List<Loan> get loans => _repository.getAllLoans();
-  
-  bool checkIsBookAvailable(Book book) {
-    return book.availableQuantity > 0;
-  }
+  bool get hasBooks => _books.isNotEmpty;
 
-  int get availableBooksCount => 
-      (_repository.getAllBooks() as List<Book>).where((b) => checkIsBookAvailable(b)).length;
+  List<CatalogItem> get catalogItems => _books
+      .map((b) => (
+            id: b.id,
+            title: b.title,
+            author: b.author,
+            stockLabel: _stockLabel(b),
+            canBorrow: _canBorrow(b),
+          ))
+      .toList();
+
+  int get availableBooksCount => _books.where(_canBorrow).length;
+
+  String get availabilitySummary =>
+      '$availableBooksCount dari ${_books.length} judul tersedia';
+
+  List<Book> get _books => _repository.getAllBooks();
+
+  bool _canBorrow(Book book) => book.availableQuantity > 0;
+
+  String _stockLabel(Book book) => _canBorrow(book)
+      ? 'Stok: ${book.availableQuantity} / ${book.totalQuantity}'
+      : 'Stok habis (0 / ${book.totalQuantity})';
 
   Future<void> loadLibraryData() async {
     _isLoading = true;
     notifyListeners();
 
-    await _repository.initData();
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Book getBookById(String bookId) {
-    return _repository.getAllBooks().firstWhere(
-      (Book b) => b.id == bookId,
-      orElse: () => Book(
-        id: '',
-        title: 'Tidak Ditemukan',
-        author: '-',
-        replacementPrice: 0,
-        totalQuantity: 0,
-        availableQuantity: 0,
-      ),
-    );
-  }
-
-
-  double getFineForLoan(Loan loan) {
-    if (loan.isReturned) return 0.0;
-    
-    final now = DateTime.now();
-    if (now.isAfter(loan.dueDate)) {
-      final daysLate = now.difference(loan.dueDate).inDays;
-      const double finePerDay = 1000.0;
-      return daysLate * finePerDay;
+    try {
+      await _repository.initData();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    return 0.0;
-  }
-
-  void borrowBook(String bookId, String studentId) {
-    bool success = _repository.borrowBook(bookId, studentId);
-    if (success) notifyListeners();
-  }
-
-  void returnBook(String loanId) {
-    _repository.returnBook(loanId);
-    notifyListeners();
   }
 }

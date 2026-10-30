@@ -5,7 +5,7 @@ import '../Book.dart';
 import '../Loan.dart';
 
 class LibraryService {
-  static const String _booksAsset = 'assets/data/books.json';
+  static const String _booksAsset = 'book.json';
 
   static final List<Book> _books = [];
   static final List<Loan> _loans = [];
@@ -13,8 +13,20 @@ class LibraryService {
 
   Future<void> init() async {
     if (_loaded) return;
+
     final raw = await rootBundle.loadString(_booksAsset);
-    final list = jsonDecode(raw) as List<dynamic>;
+    final decoded = jsonDecode(raw);
+
+    final List<dynamic> list;
+    if (decoded is List) {
+      list = decoded;
+    } else if (decoded is Map<String, dynamic>) {
+      list = (decoded['book'] ?? decoded.values.firstWhere((v) => v is List))
+          as List<dynamic>;
+    } else {
+      throw const FormatException('Format book.json tidak dikenali');
+    }
+
     _books
       ..clear()
       ..addAll(list.map((e) => Book.fromJson(e as Map<String, dynamic>)));
@@ -25,13 +37,17 @@ class LibraryService {
 
   void writeBooks(List<Book> books) {
     final copy = List.of(books);
-    _books..clear()..addAll(copy);
+    _books
+      ..clear()
+      ..addAll(copy);
   }
 
   List<Loan> readLoans() => List.of(_loans);
 
   void writeLoans(List<Loan> loans) {
     final copy = List.of(loans);
-    _loans..clear()..addAll(copy);
+    _loans
+      ..clear()
+      ..addAll(copy);
   }
 }
